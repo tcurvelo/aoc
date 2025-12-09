@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func fileOrStdin() *bufio.Scanner {
+func inputScanner() (input *bufio.Scanner, cleanup func()) {
 	file := os.Stdin
 	if len(os.Args) > 1 {
 		var err error
@@ -17,16 +17,18 @@ func fileOrStdin() *bufio.Scanner {
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
+		return bufio.NewScanner(file), func() { file.Close() }
 	}
-	return bufio.NewScanner(file)
+	return bufio.NewScanner(file), func() {}
 }
 
 func main() {
+	input, cleanup := inputScanner()
+	defer cleanup()
+
 	re := regexp.MustCompile("([0-9]+)-([0-9]+)")
 	total := 0
 
-	input := fileOrStdin()
 	for input.Scan() {
 		row := input.Text()
 		intervals := strings.Split(row, ",")

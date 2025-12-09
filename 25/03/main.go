@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func fileOrStdin() *bufio.Scanner {
+func inputScanner() (input *bufio.Scanner, cleanup func()) {
 	file := os.Stdin
 	if len(os.Args) > 1 {
 		var err error
@@ -15,13 +15,15 @@ func fileOrStdin() *bufio.Scanner {
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
+		return bufio.NewScanner(file), func() { file.Close() }
 	}
-	return bufio.NewScanner(file)
+	return bufio.NewScanner(file), func() {}
 }
 
 func main() {
-	input := fileOrStdin()
+	input, cleanup := inputScanner()
+	defer cleanup()
+
 	acc := 0
 	wordLen := 12
 

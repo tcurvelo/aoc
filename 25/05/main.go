@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-func fileOrStdin() *bufio.Scanner {
+func inputScanner() (input *bufio.Scanner, cleanup func()) {
 	file := os.Stdin
 	if len(os.Args) > 1 {
 		var err error
@@ -15,9 +15,9 @@ func fileOrStdin() *bufio.Scanner {
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
+		return bufio.NewScanner(file), func() { file.Close() }
 	}
-	return bufio.NewScanner(file)
+	return bufio.NewScanner(file), func() {}
 }
 
 type Range struct {
@@ -45,7 +45,8 @@ func mergeRanges(ranges []Range) []Range {
 }
 
 func main() {
-	input := fileOrStdin()
+	input, cleanup := inputScanner()
+	defer cleanup()
 	db := []Range{}
 	count := 0
 
